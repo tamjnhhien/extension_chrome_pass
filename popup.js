@@ -275,17 +275,32 @@ function importData(event) {
   const reader = new FileReader();
   reader.onload = function (e) {
     const contents = e.target.result;
-    const passwords = contents.split('\n').map(line => {
+    const importedPasswords = contents.split('\n').map(line => {
       const [title, username, password] = line.split(', ').map(item => item.split(': ')[1]);
-      return { title, username, password: btoa(password) };
+      return { title, username, password: btoa(password) }; // Encode password for storage
     });
 
     chrome.storage.local.get({ passwords: [] }, function (result) {
       const existingPasswords = result.passwords;
-      const updatedPasswords = existingPasswords.concat(passwords);
-      chrome.storage.local.set({ passwords: updatedPasswords }, function () {
-        displayPasswords(1);
+
+      // Filter out any imported passwords that are duplicates
+      const nonDuplicatePasswords = importedPasswords.filter(importedPassword => {
+        return !existingPasswords.some(existingPassword => 
+          existingPassword.title === importedPassword.title && 
+          existingPassword.username === importedPassword.username
+        );
       });
+
+      // If there are new (non-duplicate) passwords, add them to the storage
+      if (nonDuplicatePasswords.length > 0) {
+        const updatedPasswords = existingPasswords.concat(nonDuplicatePasswords);
+        chrome.storage.local.set({ passwords: updatedPasswords }, function () {
+          displayPasswords(1); // Re-display passwords after import
+          alert(nonDuplicatePasswords.length + ' new password(s) added.');
+        });
+      } else {
+        alert('No new passwords to add, all entries are duplicates.');
+      }
     });
   };
   reader.readAsText(file);

@@ -106,7 +106,7 @@ button:hover {
   top: 20px; /* Adjust as needed */
   right: 20px; /* Adjust as needed */
   z-index: 1000; /* Make sure it's above other content */
-  padding: 10px 15px; /* Adjust padding for better visual appearance */
+  padding: 10px 17px; /* Adjust padding for better visual appearance */
   border-radius: 50%; /* Make the button circular */
   font-size: 20px; /* Adjust the icon size */
 }
