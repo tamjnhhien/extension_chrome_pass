@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Password Manager</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body class="bg-light" style="background-image: url('background.jpg'); background-size: cover;">
+  <div class="container mt-5">
+    <h1 class="text-center mb-8 text-white display-8">Password Manager</h1>
+    <button id="toggleFormBtn" class="btn btn-primary">
+      <i class="fas fa-plus"></i>
+    </button>
+    <input type="text" id="searchInput" class="form-control" placeholder="Search by title or username">
+    <form id="passwordForm" class="bg-white p-4 rounded shadow-sm form-opacity d-none">
+      <div class="form-group">
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" class="form-control input-opacity" required>
+      </div>
+      <div class="form-group form-check">
+        <input type="checkbox" class="form-check-input" id="showPassword">
+        <label class="form-check-label" for="showPassword">Show Password</label>
+      </div>
+      <div class="form-group d-flex justify-content-between">
+        <button type="button" id="suggestPassword" class="btn btn-primary">Suggest Password</button>
+        <button type="submit" class="btn btn-success">Save</button>
+      </div>
+    </form>
+    <div class="table-responsive">
+      <table id="passwordTable" class="table table-striped mt-4 table-center">
+        <thead class="thead-dark">
+          <tr>
+            <th id="sort-title">Title <i id="title-sort-indicator" class="fas fa-sort"></i></th>
+            <th id="sort-username">Username <i id="username-sort-indicator" class="fas fa-sort"></i></th>
+            <th>Password</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Data will be inserted here -->
+        </tbody>
+      </table>
+    </div>
+    <nav>
+      <ul id="pagination" class="pagination justify-content-center">
+        <!-- pagination -->
+      </ul>
+    </nav>
+    <button id="exportData" class="btn btn-warning mt-3">Export Data</button>
+    <input type="file" id="importFile" class="btn btn-info mt-3" />
+  </div>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="popup.js"></script>
+</body>
+
+</html>
