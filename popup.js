@@ -3,7 +3,7 @@ document.getElementById('passwordForm').addEventListener('submit', savePassword)
 document.getElementById('suggestPassword').addEventListener('click', suggestPassword);
 document.getElementById('exportData').addEventListener('click', exportData);
 document.getElementById('importFile').addEventListener('change', importData);
-document.getElementById('showPassword').addEventListener('change', togglePasswordVisibilityForm);
+// document.getElementById('showPassword').addEventListener('change', togglePasswordVisibilityForm);
 document.getElementById('sort-title').addEventListener('click', function () {
   sortPasswords('title');
 });
@@ -16,6 +16,12 @@ document.getElementById('toggleFormBtn').addEventListener('click', function () {
 
 document.addEventListener('DOMContentLoaded', function () {
   displayPasswords(1);
+
+  // Initialize tooltips
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+  });
 });
 
 // Global variables
@@ -58,7 +64,7 @@ function savePassword(event) {
 function suggestPassword() {
   const length = 12; // Set desired password length
   const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=";
-  
+
   let password = "";
   for (let i = 0, n = charset.length; i < length; ++i) {
     password += charset.charAt(Math.floor(Math.random() * n));
@@ -85,15 +91,15 @@ function toggleForm() {
 }
 
 // Toggle password visibility in the form
-function togglePasswordVisibilityForm() {
-  const passwordInput = document.getElementById('password');
-  const showPasswordCheckbox = document.getElementById('showPassword');
-  if (showPasswordCheckbox.checked) {
-    passwordInput.type = 'text';
-  } else {
-    passwordInput.type = 'password';
-  }
-}
+// function togglePasswordVisibilityForm() {
+//   const passwordInput = document.getElementById('password');
+//   const showPasswordCheckbox = document.getElementById('showPassword');
+//   if (showPasswordCheckbox.checked) {
+//     passwordInput.type = 'text';
+//   } else {
+//     passwordInput.type = 'password';
+//   }
+// }
 
 // Function to sort passwords based on a field
 function sortPasswords(field) {
@@ -154,10 +160,18 @@ function displayPasswords(page = 1) {
         <td>
           <input type="password" value="${atob(data.password)}" readonly class="form-control">
         </td>
-        <td class="d-flex justify-content-between">
-          <button class="toggle-visibility btn btn-secondary">Show</button>
-          <button class="edit btn btn-info" data-index="${start + index}">Edit</button>
-          <button class="delete btn btn-danger" data-index="${start + index}">Delete</button>
+        <td>
+          <div class="d-flex justify-content-between">
+            <button class="toggle-visibility btn btn-secondary" data-bs-toggle="tooltip" title="Show/Hide Password">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="edit btn btn-info" data-index="${start + index}" data-bs-toggle="tooltip" title="Edit">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="delete btn btn-danger" data-index="${start + index}" data-bs-toggle="tooltip" title="Delete">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </div>
         </td>
       `;
       tbody.appendChild(row);
@@ -176,16 +190,61 @@ function updatePagination() {
   const pagination = document.getElementById('pagination');
   pagination.innerHTML = '';
 
-  for (let i = 1; i <= totalPages; i++) {
+  if (totalPages <= 1) return; // No need to display pagination for a single page
+
+  const maxVisiblePages = 5; // Number of pages to display at once (excluding first and last)
+
+  const createPageItem = (pageNumber, isActive = false) => {
     const li = document.createElement('li');
     li.classList.add('page-item');
-    if (i === currentPage) li.classList.add('active');
-    li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+    if (isActive) li.classList.add('active');
+    li.innerHTML = `<a class="page-link" href="#">${pageNumber}</a>`;
     li.addEventListener('click', function (e) {
       e.preventDefault();
-      displayPasswords(i);
+      displayPasswords(pageNumber);
     });
+    return li;
+  };
+
+  // Add the first page
+  pagination.appendChild(createPageItem(1, currentPage === 1));
+
+  // Determine the range of pages to show around the current page
+  let startPage = Math.max(2, currentPage - Math.floor(maxVisiblePages / 2));
+  let endPage = Math.min(totalPages - 1, currentPage + Math.floor(maxVisiblePages / 2));
+
+  // Adjust the range if we are near the beginning or end
+  if (currentPage <= Math.floor(maxVisiblePages / 2)) {
+    endPage = Math.min(totalPages - 1, maxVisiblePages);
+  }
+  if (currentPage > totalPages - Math.floor(maxVisiblePages / 2)) {
+    startPage = Math.max(2, totalPages - maxVisiblePages + 1);
+  }
+
+  // Add ellipsis if there are hidden pages before the visible range
+  if (startPage > 2) {
+    const li = document.createElement('li');
+    li.classList.add('page-item', 'disabled');
+    li.innerHTML = '<a class="page-link" href="#">...</a>';
     pagination.appendChild(li);
+  }
+
+  // Add visible page numbers
+  for (let i = startPage; i <= endPage; i++) {
+    pagination.appendChild(createPageItem(i, currentPage === i));
+  }
+
+  // Add ellipsis if there are hidden pages after the visible range
+  if (endPage < totalPages - 1) {
+    const li = document.createElement('li');
+    li.classList.add('page-item', 'disabled');
+    li.innerHTML = '<a class="page-link" href="#">...</a>';
+    pagination.appendChild(li);
+  }
+
+  // Add the last page
+  if (totalPages > 1) {
+    pagination.appendChild(createPageItem(totalPages, currentPage === totalPages));
   }
 }
 
@@ -213,12 +272,16 @@ function attachRowEventListeners() {
 // Toggle visibility of password in table
 function togglePasswordVisibility(button) {
   const input = button.closest('tr').querySelector('input[type="password"], input[type="text"]');
+  const icon = button.querySelector('i'); // Get the icon element
+
   if (input.type === 'password') {
     input.type = 'text';
-    button.textContent = 'Hide';
+    icon.classList.remove('fa-eye'); // Remove "eye" icon
+    icon.classList.add('fa-eye-slash'); // Add "eye-slash" icon
   } else {
     input.type = 'password';
-    button.textContent = 'Show';
+    icon.classList.remove('fa-eye-slash'); // Remove "eye-slash" icon
+    icon.classList.add('fa-eye'); // Add "eye" icon
   }
 }
 
@@ -285,8 +348,8 @@ function importData(event) {
 
       // Filter out any imported passwords that are duplicates
       const nonDuplicatePasswords = importedPasswords.filter(importedPassword => {
-        return !existingPasswords.some(existingPassword => 
-          existingPassword.title === importedPassword.title && 
+        return !existingPasswords.some(existingPassword =>
+          existingPassword.title === importedPassword.title &&
           existingPassword.username === importedPassword.username
         );
       });
@@ -312,28 +375,27 @@ document.getElementById('searchInput').addEventListener('input', function () {
 });
 
 function displayPasswords(page = 1) {
-  const searchTerm = document.getElementById('searchInput').value.toLowerCase(); // Get search term and convert to lowercase
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase();
 
   chrome.storage.local.get({ passwords: [] }, function (result) {
     let passwords = result.passwords;
 
-    // Filter passwords based on the search term (if search term is not empty)
     if (searchTerm) {
-      passwords = passwords.filter(password => 
-        password.title.toLowerCase().includes(searchTerm) || 
+      passwords = passwords.filter(password =>
+        password.title.toLowerCase().includes(searchTerm) ||
         password.username.toLowerCase().includes(searchTerm)
       );
     }
 
-    totalPages = Math.ceil(passwords.length / itemsPerPage); // Calculate total pages
-    currentPage = page; // Update current page
+    totalPages = Math.ceil(passwords.length / itemsPerPage);
+    currentPage = Math.min(page, totalPages);
 
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
     const paginatedPasswords = passwords.slice(start, end);
 
     const tbody = document.getElementById('passwordTable').querySelector('tbody');
-    tbody.innerHTML = ''; // Clear existing rows
+    tbody.innerHTML = '';
     paginatedPasswords.forEach((data, index) => {
       const row = document.createElement('tr');
       row.innerHTML = `
@@ -342,19 +404,86 @@ function displayPasswords(page = 1) {
         <td>
           <input type="password" value="${atob(data.password)}" readonly class="form-control">
         </td>
-        <td class="d-flex justify-content-between">
-          <button class="toggle-visibility btn btn-secondary">Show</button>
-          <button class="edit btn btn-info" data-index="${start + index}">Edit</button>
-          <button class="delete btn btn-danger" data-index="${start + index}">Delete</button>
+        <td>
+          <div class="d-flex justify-content-between">
+            <button class="toggle-visibility btn btn-secondary" data-bs-toggle="tooltip" title="Show/Hide Password">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="copy-password btn btn-primary" data-password="${atob(data.password)}" data-bs-toggle="tooltip" title="Copy Password">
+              <i class="fas fa-copy"></i>
+            </button>
+            <button class="edit btn btn-info" data-index="${start + index}" data-bs-toggle="tooltip" title="Edit">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="delete btn btn-danger" data-index="${start + index}" data-bs-toggle="tooltip" title="Delete">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </div>
         </td>
       `;
       tbody.appendChild(row);
     });
 
-    // Attach event listeners for the rows
     attachRowEventListeners();
-
-    // Update pagination
     updatePagination();
   });
 }
+
+// Update attachRowEventListeners function to handle the copy functionality
+function attachRowEventListeners() {
+  document.querySelectorAll('.toggle-visibility').forEach(button => {
+    button.addEventListener('click', function () {
+      togglePasswordVisibility(this);
+    });
+  });
+
+  document.querySelectorAll('.copy-password').forEach(button => {
+    button.addEventListener('click', function () {
+      const password = this.getAttribute('data-password');
+      navigator.clipboard.writeText(password).then(() => {
+        // alert('Password copied to clipboard!');
+      }).catch(err => {
+        console.error('Failed to copy password: ', err);
+      });
+    });
+  });
+
+  document.querySelectorAll('.edit').forEach(button => {
+    button.addEventListener('click', function () {
+      editPassword(this.getAttribute('data-index'));
+    });
+  });
+
+  document.querySelectorAll('.delete').forEach(button => {
+    button.addEventListener('click', function () {
+      deletePassword(this.getAttribute('data-index'));
+    });
+  });
+}
+
+// Add event listener for the Delete All button
+document.getElementById('deleteAll').addEventListener('click', function () {
+  if (confirm('Are you sure you want to delete all passwords? This action cannot be undone.')) {
+    chrome.storage.local.set({ passwords: [] }, function () {
+      // Clear the table and update pagination
+      displayPasswords(1);
+      alert('All passwords have been deleted.');
+    });
+  }
+});
+
+document.getElementById('togglePassword').addEventListener('click', function () {
+  const passwordInput = document.getElementById('password');
+  const icon = this.querySelector('i');
+
+  // Toggle the password visibility and icon
+  if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';
+    icon.classList.remove('fa-eye');
+    icon.classList.add('fa-eye-slash');
+  } else {
+    passwordInput.type = 'password';
+    icon.classList.remove('fa-eye-slash');
+    icon.classList.add('fa-eye');
+  }
+});

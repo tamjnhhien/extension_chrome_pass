@@ -25,13 +25,14 @@
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" class="form-control" required>
       </div>
-      <div class="form-group">
+      <div class="form-group position-relative">
         <label for="password">Password:</label>
-        <input type="password" id="password" name="password" class="form-control input-opacity" required>
-      </div>
-      <div class="form-group form-check">
-        <input type="checkbox" class="form-check-input" id="showPassword">
-        <label class="form-check-label" for="showPassword">Show Password</label>
+        <div class="input-group">
+          <input type="password" id="password" name="password" class="form-control input-opacity" required>
+          <button type="button" id="togglePassword" class="btn btn-outline-secondary">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
       </div>
       <div class="form-group d-flex justify-content-between">
         <button type="button" id="suggestPassword" class="btn btn-primary">Suggest Password</button>
@@ -60,6 +61,7 @@
     </nav>
     <button id="exportData" class="btn btn-warning mt-3">Export Data</button>
     <input type="file" id="importFile" class="btn btn-info mt-3" />
+    <button id="deleteAll" class="btn btn-danger mt-3">Delete All</button>
   </div>
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
